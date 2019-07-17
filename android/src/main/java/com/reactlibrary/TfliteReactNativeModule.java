@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -177,6 +178,16 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     tfLite.run(feedInputTensorImage(path, mean, std), labelProb);
 
     callback.invoke(null, GetTopN(numResults, threshold));
+  }
+
+  private Map<Integer, Object> makeOutputMap(Class<?> componentType) {
+    Map<Integer, Object> outputMap = new HashMap<>();
+    for (int i = 0; i < tfLite.getOutputTensorCount(); i++) {
+      int[] shape = tfLite.getOutputTensor(i).shape();
+      Object output = Array.newInstance(componentType, shape);
+      outputMap.put(i, output);
+    }
+    return outputMap;
   }
 
   @ReactMethod
@@ -461,8 +472,8 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
   List<Integer> parentToChildEdges = new ArrayList<>();
   List<Integer> childToParentEdges = new ArrayList<>();
 
-
-  void initPoseNet(Map<Integer, Object> outputMap) {
+  // void initPoseNet(Map<Integer, Object> outputMap) {
+  void initPoseNet() {
     if (partsIds.size() == 0) {
       for (int i = 0; i < partNames.length; ++i)
         partsIds.put(partNames[i], i);
@@ -473,11 +484,11 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
       }
     }
 
-    for (int i = 0; i < tfLite.getOutputTensorCount(); i++) {
-      int[] shape = tfLite.getOutputTensor(i).shape();
-      float[][][][] output = new float[shape[0]][shape[1]][shape[2]][shape[3]];
-      outputMap.put(i, output);
-    }
+    // for (int i = 0; i < tfLite.getOutputTensorCount(); i++) {
+    //   int[] shape = tfLite.getOutputTensor(i).shape();
+    //   float[][][][] output = new float[shape[0]][shape[1]][shape[2]][shape[3]];
+    //   outputMap.put(i, output);
+    // }
   }
 
   @ReactMethod
@@ -489,8 +500,10 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     ByteBuffer imgData = feedInputTensorImage(path, mean, std);
     Object[] input = new Object[]{imgData};
 
-    Map<Integer, Object> outputMap = new HashMap<>();
-    initPoseNet(outputMap);
+    // Map<Integer, Object> outputMap = new HashMap<>();
+    // initPoseNet(outputMap);
+    initPoseNet();
+    Map<Integer, Object> outputMap = makeOutputMap(float.class);
 
     tfLite.runForMultipleInputsOutputs(input, outputMap);
 
