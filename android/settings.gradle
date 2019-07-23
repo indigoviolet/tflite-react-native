@@ -1,0 +1,2 @@
+include ':react-native-bridgeutils'
+project(':react-native-bridgeutils').projectDir=new File('/home/venky/dev/react-native-bridgeutils/android')

@@ -10,7 +10,8 @@ class Tflite {
       args['numThreads'] || 1,
       (error, response) => {
         callback && callback(error, response);
-      });
+      }
+    );
   }
 
   runModelOnImage(args, callback) {
@@ -22,13 +23,25 @@ class Tflite {
       args['threshold'] != null ? args['threshold'] : 0.1,
       (error, response) => {
         callback && callback(error, response);
-      });
+      }
+    );
+  }
+
+  runModelOnImageMulti(args, callback) {
+    TfliteReactNative.runModelOnImageMulti(
+      args['path'],
+      args['imageMean'] != null ? args['imageMean'] : 127.5,
+      args['imageStd'] != null ? args['imageStd'] : 127.5,
+      (error, response) => {
+        callback && callback(error, response);
+      }
+    );
   }
 
   detectObjectOnImage(args, callback) {
     TfliteReactNative.detectObjectOnImage(
       args['path'],
-      args['model'] || "SSDMobileNet",
+      args['model'] || 'SSDMobileNet',
       args['imageMean'] != null ? args['imageMean'] : 127.5,
       args['imageStd'] != null ? args['imageStd'] : 127.5,
       args['threshold'] != null ? args['threshold'] : 0.1,
@@ -43,12 +56,13 @@ class Tflite {
         7.88282,
         3.52778,
         9.77052,
-        9.16828
+        9.16828,
       ],
       args['blockSize'] || 32,
       (error, response) => {
         callback && callback(error, response);
-      });
+      }
+    );
   }
 
   runSegmentationOnImage(args, callback) {
@@ -79,10 +93,11 @@ class Tflite {
         0x80c000, // train
         0x004080, // tv-monitor
       ],
-      args['outputType'] || "png",
+      args['outputType'] || 'png',
       (error, response) => {
         callback && callback(error, response);
-      });
+      }
+    );
   }
 
   runPoseNetOnImage(args, callback) {
@@ -95,7 +110,8 @@ class Tflite {
       args['nmsRadius'] || 20,
       (error, response) => {
         callback && callback(error, response);
-      });
+      }
+    );
   }
 
   close() {

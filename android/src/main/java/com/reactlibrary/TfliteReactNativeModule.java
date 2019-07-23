@@ -5,16 +5,16 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Canvas;
 import android.util.Base64;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Vector;
+
+import com.indigoviolet.react.ArrayUtil;
+import com.indigoviolet.react.MapUtil;
 
 public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
 
@@ -131,7 +134,7 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     return results;
   }
 
-  ByteBuffer feedInputTensorImage(String path, float mean, float std) throws IOException {
+  private ByteBuffer feedInputTensorImage(String path, float mean, float std) throws IOException {
     Tensor tensor = tfLite.getInputTensor(0);
     inputSize = tensor.shape()[1];
     int inputChannels = tensor.shape()[3];
@@ -178,6 +181,18 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     tfLite.run(feedInputTensorImage(path, mean, std), labelProb);
 
     callback.invoke(null, GetTopN(numResults, threshold));
+  }
+
+  @ReactMethod
+  private void runModelOnImageMulti(final String path, final float mean,
+                                    final float std, final Callback callback) throws IOException {
+
+    ByteBuffer imgData = feedInputTensorImage(path, mean, std);
+    Object[] input = new Object[]{imgData};
+    Map<Integer, Object> outputMap = makeOutputMap(float.class);
+    tfLite.runForMultipleInputsOutputs(input, outputMap);
+
+    callback.invoke(null, ArrayUtil.toWritableArray(outputMap.values().toArray()));
   }
 
   private Map<Integer, Object> makeOutputMap(Class<?> componentType) {
