@@ -43,7 +43,6 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 
 import com.indigoviolet.react.ArrayUtil;
-import com.indigoviolet.react.MapUtil;
 
 public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
 
