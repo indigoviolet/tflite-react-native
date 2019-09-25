@@ -12,6 +12,7 @@ class Tflite {
   runModelOnImageMulti(args, callback) {
     TfliteReactNative.runModelOnImageMulti(
       args['path'],
+      args['rotation'] != null ? args['rotation'] : 0,
       args['imageMean'] != null ? args['imageMean'] : 127.5,
       args['imageStd'] != null ? args['imageStd'] : 127.5,
       (error, response) => {

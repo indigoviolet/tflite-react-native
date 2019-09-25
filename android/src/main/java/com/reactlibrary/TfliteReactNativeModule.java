@@ -5,7 +5,6 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
 
 
@@ -68,7 +67,7 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     callback.invoke(null, "success");
   }
 
-  private ByteBuffer feedInputTensorImage(String path, float mean, float std) throws IOException {
+  private ByteBuffer feedInputTensorImage(String path, int rotation, float mean, float std) throws IOException {
     Tensor tensor = tfLite.getInputTensor(0);
     inputSize = tensor.shape()[1];
     int inputChannels = tensor.shape()[3];
@@ -77,16 +76,17 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     Bitmap bitmapRaw = BitmapFactory.decodeStream(inputStream);
 
     Matrix matrix = getTransformationMatrix(bitmapRaw.getWidth(), bitmapRaw.getHeight(),
-        inputSize, inputSize, false);
+                                            inputSize, inputSize, false, rotation);
 
     int[] intValues = new int[inputSize * inputSize];
     int bytePerChannel = tensor.dataType() == DataType.UINT8 ? 1 : BYTES_PER_CHANNEL;
     ByteBuffer imgData = ByteBuffer.allocateDirect(1 * inputSize * inputSize * inputChannels * bytePerChannel);
     imgData.order(ByteOrder.nativeOrder());
 
-    Bitmap bitmap = Bitmap.createBitmap(inputSize, inputSize, Bitmap.Config.ARGB_8888);
-    final Canvas canvas = new Canvas(bitmap);
-    canvas.drawBitmap(bitmapRaw, matrix, null);
+    Bitmap bitmap = Bitmap.createBitmap(bitmapRaw, 0, 0, bitmapRaw.getWidth(), bitmapRaw.getHeight(), matrix, true);
+    bitmap.setConfig(Bitmap.Config.ARGB_8888);
+    // final Canvas canvas = new Canvas(bitmap);
+    // canvas.drawBitmap(bitmapRaw, matrix, null);
     bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
     int pixel = 0;
@@ -109,10 +109,10 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  private void runModelOnImageMulti(final String path, final float mean,
+  private void runModelOnImageMulti(final String path, final int rotation, final float mean,
                                     final float std, final Callback callback) throws IOException {
 
-    ByteBuffer imgData = feedInputTensorImage(path, mean, std);
+    ByteBuffer imgData = feedInputTensorImage(path, rotation, mean, std);
     Object[] input = new Object[]{imgData};
     Map<Integer, Object> outputMap = makeOutputMap(float.class);
     tfLite.runForMultipleInputsOutputs(input, outputMap);
@@ -140,7 +140,9 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
                                                 final int srcHeight,
                                                 final int dstWidth,
                                                 final int dstHeight,
-                                                final boolean maintainAspectRatio) {
+                                                final boolean maintainAspectRatio,
+                                                final int rotation
+                                                ) {
     final Matrix matrix = new Matrix();
 
     if (srcWidth != dstWidth || srcHeight != dstHeight) {
@@ -156,6 +158,10 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     }
 
     matrix.invert(new Matrix());
+    if (rotation != 0) {
+      matrix.postRotate(rotation);
+    }
+
     return matrix;
   }
 
