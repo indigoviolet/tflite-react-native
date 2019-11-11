@@ -89,6 +89,7 @@ public class TfliteReactNativeModule extends ReactContextBaseJavaModule {
     // canvas.drawBitmap(bitmapRaw, matrix, null);
     bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
+    // TODO - this is posenet specific
     int pixel = 0;
     for (int i = 0; i < inputSize; ++i) {
       for (int j = 0; j < inputSize; ++j) {

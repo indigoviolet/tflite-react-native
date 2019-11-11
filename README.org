@@ -1,0 +1,12 @@
+#+TITLE:     tflite-react-native
+#+AUTHOR:    Venky Iyer
+
+
+~tflite-react-native~ runs an image through a TFLite model and returns
+the serialized output. It infers the input and output shapes from the
+model file and does not interpret the output, but the image processing
+is currently hard-coded to work with Posenet.
+
+This module is used to do pose detection for static images in the RN
+Posera app, but it can be replaced by [[https://github.com/indigoviolet/react-native-pose-decoding][react-native-pose-decoding]],
+which can generalize to other pose detection models.
